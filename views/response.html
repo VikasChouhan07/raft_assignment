@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div>
+          <h3>Books</h3>
+          {% for book in books %}
+          <h6>
+            <b>Title:</b>{{book.title}} <b>| Isbn:</b>{{book.isbn}}
+            <b>| Authors:</b>{{book.authors}}
+            <b>| Descirption:</b>{{book.description}}
+          </h6>
+          {% endfor %}
+        </div>
+        <div>
+          <h3>Magazines</h3>
+          <table>
+            <tr>
+              <th>Title</th>
+              <th>Isbn</th>
+              <th>Authors</th>
+              <th>PublishedAt</th>
+            </tr>
+            {% for magazine in magazines %}
+            <tr>
+              <td>{{magazine.title}}</td>
+              <td>{{magazine.isbn}}</td>
+              <td>{{magazine.authors}}</td>
+              <td>{{magazine.publishedAt}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        <div class="form-group">
+          <label for="exampleFormControlFile1">Find csv by Isbn</label>
+          <input type="text" class="form-control-file" id="isbn" name="isbn" />
+          <button type="button" id="isbnSubmit" class="btn btn-primary">
+            Submit
+          </button>
+          <div id="bookSearch"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const input = document.getElementById("isbn");
+      const findIsbn = (isbn) => {
+        fetch("/book/" + isbn, {
+          method: "GET",
+          headers: {},
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            document.getElementById("bookSearch").innerText =
+              JSON.stringify(data);
+          })
+          .catch(
+            (error) => console.log(error) // Handle the error response object
+          );
+      };
+
+      const onSelectFile = () => findIsbn(input.value);
+      document
+        .getElementById("isbnSubmit")
+        .addEventListener("click", onSelectFile, false);
+    </script>
+  </body>
+</html>
