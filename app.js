@@ -9,6 +9,7 @@ app.engine("html", swig.renderFile);
 const csvToJson = require("convert-csv-to-json");
 const { filter } = require("./helper/filterCsv");
 const { response } = require("express");
+const { dataObj } = require("./dataStore");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "tmp/csv/");
@@ -18,9 +19,6 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage: storage });
-
-// app.use(bodyParser.json({ limit: "50mb" }));
-// app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 app.get("/", (req, res) => {
   try {
@@ -41,18 +39,28 @@ app.post(
   ]),
   (req, res) => {
     try {
-      filter(req.files.book[0].path);
-      filter(req.files.author[0].path);
-      filter(req.files.magazines[0].path);
-      console.log(req.files.book[0].path);
-      let json = csvToJson.getJsonFromCsv(req.files.book[0].path);
-      const books = csvToJson.getJsonFromCsv(req.files.book[0].path);
-      const magazines = csvToJson.getJsonFromCsv(req.files.magazines[0].path);
-      const author = csvToJson.getJsonFromCsv(req.files.author[0].path);
+      const bookData = filter(req.files.book[0].path, req.files.author[0].path);
+      const magazinesData = filter(
+        req.files.magazines[0].path,
+        req.files.author[0].path
+      );
+      dataObj.books = bookData;
+      dataObj.magazines = magazinesData;
+      let combinedData = [...dataObj.books, ...dataObj.magazines];
+      combinedData.sort((a, b) => {
+        if (a.title > b.title) {
+          return 1;
+        }
+        if (b.title > a.title) {
+          return -1;
+        }
+        return 0;
+      });
+
       res.render("response", {
-        books,
-        magazines,
-        author,
+        books: dataObj.books,
+        magazines: dataObj.magazines,
+        sortedData: combinedData,
       });
     } catch (err) {
       console.log(err);
@@ -61,17 +69,35 @@ app.post(
 );
 app.get("/book/:isbn", async (req, res) => {
   try {
-    const bookPath = "tmp/csv/book";
-    const books = csvToJson.getJsonFromCsv(bookPath);
-    let bookData = await books.find((book) => {
-      if (req.params.isbn == book.isbn) return book;
+    const combinedData = [...dataObj.books, ...dataObj.magazines];
+    console.log(combinedData);
+    const bookData = combinedData.find((book) => {
+      if (
+        req.params.isbn == book.isbn ||
+        req.params.isbn == book.isbn.split("-").join("")
+      ) {
+        return book;
+      }
     });
-    console.log(bookData);
-    console.log("here");
-    if (bookData) return res.end(JSON.stringify(bookData));
+    if (bookData) return res.status(200).json(bookData);
     else return res.status(400).json("Not found!");
   } catch (err) {
     console.log(err);
+    return res.status(500).send(err);
+  }
+});
+
+app.get("/books_and_magazines/:email", async (req, res) => {
+  try {
+    const combinedData = [...dataObj.books, ...dataObj.magazines];
+    const filteredData = await combinedData.map((obj) => {
+      if (obj.emails.includes(req.params.email)) return obj;
+    });
+    if (filteredData) return res.status(200).json(filteredData);
+    else return res.status(400).json("Not found!");
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
   }
 });
 
@@ -83,3 +109,4 @@ app.listen(port, () => {
     `Assignment services application listening at http://localhost:${port}`
   );
 });
+module.exports = app;
