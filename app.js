@@ -7,7 +7,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "html");
 app.engine("html", swig.renderFile);
 const csvToJson = require("convert-csv-to-json");
-const { filter, getPossibleMoves } = require("./helper/filterCsv");
+const { addAuthors, getPossibleMoves } = require("./helper/filterCsv");
 const { response } = require("express");
 const { dataObj } = require("./dataStore");
 const storage = multer.diskStorage({
@@ -39,8 +39,11 @@ app.post(
   ]),
   (req, res) => {
     try {
-      const bookData = filter(req.files.book[0].path, req.files.author[0].path);
-      const magazinesData = filter(
+      const bookData = addAuthors(
+        req.files.book[0].path,
+        req.files.author[0].path
+      );
+      const magazinesData = addAuthors(
         req.files.magazines[0].path,
         req.files.author[0].path
       );
@@ -70,7 +73,7 @@ app.post(
 app.get("/book/:isbn", async (req, res) => {
   try {
     const combinedData = [...dataObj.books, ...dataObj.magazines];
-    console.log(combinedData);
+
     const bookData = combinedData.find((book) => {
       if (
         req.params.isbn == book.isbn ||
@@ -102,6 +105,7 @@ app.get("/books_and_magazines/:email", async (req, res) => {
     return res.status(500).send(err);
   }
 });
+
 
 app.get("/find_positions/:position", async (req, res) => {
   try {

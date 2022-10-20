@@ -1,6 +1,6 @@
 const fs = require("fs");
 const csvToJson = require("convert-csv-to-json");
-const filter = (filePath, authorDataPath, type) => {
+const addAuthors = (filePath, authorDataPath) => {
   try {
     let fileData = csvToJson.getJsonFromCsv(filePath);
     const authors = csvToJson.getJsonFromCsv(authorDataPath);
@@ -34,13 +34,13 @@ const getPossibleMoves = (posA, posB) => {
     let x = posA + X[i];
     let y = posB + Y[i];
 
-    if (x >= 0 && y >= 0 && x < n && y < m)
-      placesItCanMove.push(x + "," + y);
+    if (x >= 0 && y >= 0 && x < n && y < m) placesItCanMove.push(x + "," + y);
   }
   console.log(placesItCanMove);
   return placesItCanMove;
 };
+
 module.exports = {
-  filter,
+  addAuthors,
   getPossibleMoves,
 };
