@@ -7,7 +7,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "html");
 app.engine("html", swig.renderFile);
 const csvToJson = require("convert-csv-to-json");
-const { filter } = require("./helper/filterCsv");
+const { filter, getPossibleMoves } = require("./helper/filterCsv");
 const { response } = require("express");
 const { dataObj } = require("./dataStore");
 const storage = multer.diskStorage({
@@ -90,10 +90,27 @@ app.get("/book/:isbn", async (req, res) => {
 app.get("/books_and_magazines/:email", async (req, res) => {
   try {
     const combinedData = [...dataObj.books, ...dataObj.magazines];
-    const filteredData = await combinedData.map((obj) => {
-      if (obj.emails.includes(req.params.email)) return obj;
-    });
+    const filteredData = await combinedData
+      .map((obj) => {
+        if (obj.emails.includes(req.params.email)) return obj;
+      })
+      .filter((o) => o);
     if (filteredData) return res.status(200).json(filteredData);
+    else return res.status(400).json("Not found!");
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
+  }
+});
+
+app.get("/find_positions/:position", async (req, res) => {
+  try {
+    const currentPosition = req.params.position.split(",");
+    const allMoves = getPossibleMoves(
+      parseInt(currentPosition[0]),
+      parseInt(currentPosition[1])
+    );
+    if (allMoves) return res.status(200).json(allMoves);
     else return res.status(400).json("Not found!");
   } catch (err) {
     console.log(err);

@@ -99,6 +99,23 @@
           </table>
         </div>
       </div>
+      <div class="row">
+         <h1>Assignment 2</h1>
+         <div class="form-group">
+          <h3>Knights position on chessboard</h3>
+          <input
+            type="text"
+            class="form-control-file"
+            id="currentPosition"
+            name="currentPosition"
+            placeholder="2,2"
+          />
+          <button type="button" id="chessBoardBtn" class="btn btn-primary">
+            Submit
+          </button>
+          <div id="showPositions"></div>
+        </div>
+      </div>
     </div>
     <script>
       const input = document.getElementById("isbn");
@@ -142,6 +159,27 @@
       document
         .getElementById("emailSubmit")
         .addEventListener("click", onSelectEmail, false);
+
+        const inputPosition = document.getElementById("currentPosition");
+      const findPossibleWays = (position) => {
+        fetch("/find_positions/" + position, {
+          method: "GET",
+          headers: {},
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            document.getElementById("showPositions").innerText =
+              JSON.stringify(data);
+          })
+          .catch(
+            (error) => console.log(error) // Handle the error response object
+          );
+      };
+      const onSelectPosition = () => findPossibleWays(inputPosition.value);
+      document
+        .getElementById("chessBoardBtn")
+        .addEventListener("click", onSelectPosition, false);
     </script>
   </body>
 </html>
