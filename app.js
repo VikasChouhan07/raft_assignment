@@ -83,7 +83,7 @@ app.get("/book/:isbn", async (req, res) => {
       }
     });
     if (bookData) return res.status(200).json(bookData);
-    else return res.status(400).json("Not found!");
+    else return res.status(400).send({});
   } catch (err) {
     console.log(err);
     return res.status(500).send(err);
@@ -99,13 +99,12 @@ app.get("/books_and_magazines/:email", async (req, res) => {
       })
       .filter((o) => o);
     if (filteredData) return res.status(200).json(filteredData);
-    else return res.status(400).json("Not found!");
+    else return res.status(400).send([]);
   } catch (err) {
     console.log(err);
     return res.status(500).send(err);
   }
 });
-
 
 app.get("/find_positions/:position", async (req, res) => {
   try {

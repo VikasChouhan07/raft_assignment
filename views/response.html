@@ -12,12 +12,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <style>
-      table {
-        border-spacing: 10px;
-      }
       td,
       th {
         padding: 0 15px 0 15px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
       }
     </style>
   </head>
@@ -26,14 +28,24 @@
       <div class="row">
         <div>
           <h3>Books</h3>
-          {% for book in books %}
-          <h6>
-            <b>Title:</b>{{book.title}} <br><b>Isbn:</b>{{book.isbn}}
-            <br><b>Authors:</b>{{book.authors}}
-            <br> <b>Description:</b>{{book.description}}
-            <br><b>Emails:</b>{{book.emails}}
-          </h6>
-          {% endfor %}
+          <table>
+            <tr>
+              <th>Title</th>
+              <th>Isbn</th>
+              <th>Authors</th>
+              <th>Description</th>
+              <th>Emails</th>
+            </tr>
+            {% for book in books %}
+            <tr>
+              <td>{{book.title}}</td>
+              <td>{{book.isbn}}</td>
+              <td>{{book.authors}}</td>
+              <td>{{book.description}}</td>
+              <td>{{book.emails}}</td>
+            </tr>
+            {% endfor %}
+          </table>
         </div>
         <div>
           <h3>Magazines</h3>
@@ -100,8 +112,8 @@
         </div>
       </div>
       <div class="row">
-         <h1>Assignment 2</h1>
-         <div class="form-group">
+        <h1>Assignment 2</h1>
+        <div class="form-group">
           <h3>Knights position on chessboard</h3>
           <input
             type="text"
@@ -126,9 +138,11 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
-            document.getElementById("bookSearch").innerText =
-              JSON.stringify(data);
+            if (data) {
+              document.getElementById("bookSearch").innerHTML = generateTable([
+                data,
+              ]);
+            }
           })
           .catch(
             (error) => console.log(error) // Handle the error response object
@@ -147,9 +161,10 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
-            document.getElementById("searchByEmail").innerText =
-              JSON.stringify(data);
+            if (data) {
+              document.getElementById("searchByEmail").innerHTML =
+                generateTable(data);
+            }
           })
           .catch(
             (error) => console.log(error) // Handle the error response object
@@ -160,7 +175,7 @@
         .getElementById("emailSubmit")
         .addEventListener("click", onSelectEmail, false);
 
-        const inputPosition = document.getElementById("currentPosition");
+      const inputPosition = document.getElementById("currentPosition");
       const findPossibleWays = (position) => {
         fetch("/find_positions/" + position, {
           method: "GET",
@@ -180,6 +195,27 @@
       document
         .getElementById("chessBoardBtn")
         .addEventListener("click", onSelectPosition, false);
+
+      function generateTable(data) {
+        if (!data[0]?.isbn) {
+          return "<b>No Data found!</b>";
+        }
+        let htmlData =
+          "<table><tr><th>Title</th><th>Isbn</th><th>Authors</th><th>Description</th><th>Emails</th><th>Published At</th></tr>";
+        data.forEach((obj) => {
+          let description = obj?.description || "";
+          let publishedAt = obj?.publishedAt || "";
+          htmlData += `<tr><td>${obj.title}</td>
+              <td>${obj.isbn}</td>
+              <td>${obj.authors}</td>
+              <td>${description}</td>
+              <td>${obj.emails}</td>
+              <td>${publishedAt}</td>
+            </tr>`;
+        });
+        htmlData += "</table>";
+        return htmlData;
+      }
     </script>
   </body>
 </html>
